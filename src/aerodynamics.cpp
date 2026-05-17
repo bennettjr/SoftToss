@@ -23,15 +23,22 @@ namespace SoftToss
         return F_mag;
     }
 
-    Vec3 gravityForce()
+    Vec3 gravityForce(const BallSpec &spec)
     {
         constexpr auto g = -32.174f; // ft/s^2
-        return Vec3{0.0f, 0.0f, g};
+        return Vec3{0.0f, 0.0f, spec.mass * g};
     }
 
     Vec3 sswForce()
     {
         return Vec3();
     }
+
+    Vec3 spindownTorque(const BallSpec &spec, const BallState &state, Vec3 &F)
+    {
+        const auto k = 0.02f;                                                                                          // Torque Parameter (Check this value)
+        Vec3 torque = (state.omega.mag2() > 1e-6f) ? k * spec.radius * F.mag() * (-state.omega.normalized()) : Vec3(); // torque slug*ft^2/s^2
+        return torque;
+    };
 
 }; // namespace SoftToss

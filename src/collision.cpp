@@ -18,8 +18,8 @@ namespace SoftToss
         Vec3 n_hat = (state.position - collider.point).normalized();                                                   // normal vector from ground up to ball center
         Vec3 v_slip = (state.velocity - dot(state.velocity, n_hat) * n_hat) - spec.radius * cross(state.omega, n_hat); // tangential slip velocity at contact point
 
-        const float N = normalForce(state, collider, F).mag(); // magnitude of normal force
-        const float mu = 0.1f;                                 // mu_map[collider.type]; // coefficient of friction    FIX!!!!!!!!!!!!!!
+        const float N = normalForce(state, collider, F).mag();     // magnitude of normal force
+        const float mu = spec.mu[static_cast<int>(collider.type)]; // coefficient of friction
 
         if (v_slip.mag2() > 1e-6f)
         {
@@ -38,13 +38,6 @@ namespace SoftToss
                 return -mu * N * F_req.normalized(); // kinetic friction force
             }
         }
-    };
-
-    Vec3 spindownTorque(const BallSpec &spec, const BallState &state, const Collider &collider, Vec3 &F)
-    {
-        const auto k = 0.02f;                                                                                          // Torque Parameter (Check this value)
-        Vec3 torque = (state.omega.mag2() > 1e-6f) ? k * spec.radius * F.mag() * (-state.omega.normalized()) : Vec3(); // torque slug*ft^2/s^2
-        return torque;
     };
 
     Vec3 frictionTorque(const BallSpec &spec, const BallState &state, const Collider &collider, Vec3 &F_fric, Vec3 &F_norm)
@@ -68,9 +61,9 @@ namespace SoftToss
 
     BallState collision(const BallSpec &spec, const BallState &state, const Collider &collider)
     {
-        const float e_n = 0.1f; // e_n_map[collider.type];  // normal coefficient of restitution                           FIX!!!!!!!!!!!!!!
-        const float e_t = 0.1f; // e_t_map[collider.type];  // tangential coefficient of restitution                       FIX!!!!!!!!!!!!!!
-        const float mu = 0.1f;  // mu_map[collider.type];   // coefficient of friction                                     FIX!!!!!!!!!!!!!!
+        const float e_n = spec.e_n[static_cast<int>(collider.type)]; // normal coefficient of restitution
+        const float e_t = spec.e_t[static_cast<int>(collider.type)]; // tangential coefficient of restitution
+        const float mu = spec.mu[static_cast<int>(collider.type)];   // coefficient of friction
 
         Vec3 n_hat = (state.position - collider.point).normalized(); // normal vector from ground up to ball center
 

@@ -26,11 +26,11 @@ extern "C"
         cpp_spec.mass = spec->mass;
         cpp_spec.radius = spec->radius;
         cpp_spec.I = spec->I;
-        cpp_spec.c_d0 = spec->c_d0;
-        cpp_spec.c_d = spec->c_d;
-        cpp_spec.c_l0 = spec->c_l0;
-        cpp_spec.c_l1 = spec->c_l1;
-        cpp_spec.c_l2 = spec->c_l2;
+        // cpp_spec.c_d0 = spec->c_d0;
+        // cpp_spec.c_d = spec->c_d;
+        // cpp_spec.c_l0 = spec->c_l0;
+        // cpp_spec.c_l1 = spec->c_l1;
+        // cpp_spec.c_l2 = spec->c_l2;
 
         BallState cpp_state;
         cpp_state.position = {state->position.x, state->position.y, state->position.z};
@@ -77,3 +77,6 @@ extern "C"
     }
 
 } // extern "C"
+
+// static_assert(static_cast<int>(SurfaceType::Count) == 4,
+//     "ST_BallSpec surface arrays need updating to match SurfaceType::Count");

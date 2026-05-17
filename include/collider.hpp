@@ -3,11 +3,15 @@
 
 namespace SoftToss
 {
-    enum class ColliderType
+
+    enum class ColliderType : int
     {
-        Dirt,
-        Grass,
-        // Add more types as needed
+        Dirt = 0,
+        Grass = 1,
+        Wall = 2,
+        Wood = 3,
+        Aluminum = 4,
+        Count
     };
 
     struct Collider

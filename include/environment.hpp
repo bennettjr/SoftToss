@@ -19,12 +19,4 @@ namespace SoftToss
         float windHeight; // ft
     };
 
-    struct Contact
-    {
-        std::string type;
-        Vec3 point;
-
-        Contact(const std::string &t, const Vec3 &p) : type(t), point(p) {}
-    };
-
 }; // namespace SoftToss

@@ -11,11 +11,11 @@ namespace SoftToss
         const float w_act = (state.velocity.mag2() > 1e-6) ? std::sqrt(state.omega.mag2() - std::pow(dot(state.omega, state.velocity) / state.velocity.mag(), 2)) : 0.0f;                     // active spin rad/s
         const float kappa = 0.5 * env.rho * (std::numbers::pi_v<float> * spec.radius * spec.radius);                                                                                          // constant for force calculations
 
-        const Vec3 F_drag = dragForce(v_rel, w_act, kappa);              // drag force slug*ft/s^2
-        Vec3 F_mag = magnusForce(spec, state, v_rel, w_act, kappa);      // Magnus force slug*ft/s^2
-        const Vec3 F_grav = gravityForce();                              // gravitational force slug*ft/s^2
-        const Vec3 F_ssw = sswForce();                                   // shifted seam wake force slug*ft/s^2
-        const Vec3 T_sd = spindownTorque(spec, state, *collider, F_mag); // spindown torque slug*ft^2/s^2
+        const Vec3 F_drag = dragForce(v_rel, w_act, kappa);         // drag force slug*ft/s^2
+        Vec3 F_mag = magnusForce(spec, state, v_rel, w_act, kappa); // Magnus force slug*ft/s^2
+        const Vec3 F_grav = gravityForce(spec);                     // gravitational force slug*ft/s^2
+        const Vec3 F_ssw = sswForce();                              // shifted seam wake force slug*ft/s^2
+        const Vec3 T_sd = spindownTorque(spec, state, F_mag);       // spindown torque slug*ft^2/s^2
 
         Vec3 F_total = F_drag + F_mag + F_grav + F_ssw; // total force slug*ft/s^2
         Vec3 T_total = T_sd;                            // total torque slug*ft^2/s^2
