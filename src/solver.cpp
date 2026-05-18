@@ -18,7 +18,7 @@ namespace SoftToss
 
         const Vec3 F_drag = dragForce(v_rel, w_act, kappa);               // drag force slug*ft/s^2
         const Vec3 F_mag = magnusForce(spec, state, v_rel, w_act, kappa); // Magnus force slug*ft/s^2
-        const Vec3 F_grav = gravityForce(spec);                           // gravitational force slug*ft/s^2
+        const Vec3 F_grav = gravityForce(spec, env);                      // gravitational force slug*ft/s^2
         const Vec3 F_ssw = sswForce();                                    // shifted seam wake force slug*ft/s^2
         const Vec3 T_sd = spindownTorque(spec, state, F_mag);             // spindown torque slug*ft^2/s^2
 
@@ -51,7 +51,7 @@ namespace SoftToss
         // Update omega
         newState.omega = newState.omega + alpha * dt;
 
-        if (F_total.mag() < 1e-6f)
+        if (F_total.mag2() < 1e-6f && state.velocity.mag2() < 1e-1f)
         {
             newState.velocity = Vec3();
             newState.omega = Vec3();

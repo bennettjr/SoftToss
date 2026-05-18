@@ -7,6 +7,8 @@ namespace SoftToss
 
     struct Environment
     {
+        float gravity; // ft/s^2
+
         float temp;  // Temperature
         float elev;  // Elevation
         float humid; // relative humidity

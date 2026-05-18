@@ -55,12 +55,12 @@ namespace SoftToss
         Vec3 normalized() const noexcept
         {
             float len = mag();
-            return len ? (*this) / len : *this;
+            return (len > 1e-8f) ? (*this) / len : *this;
         }
         Vec3 &norm() noexcept
         {
             float len = mag();
-            if (len)
+            if (len > 1e-8f)
             {
                 *this /= len;
             }

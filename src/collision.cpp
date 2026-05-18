@@ -18,8 +18,8 @@ namespace SoftToss
         Vec3 v_slip = (state.velocity - dot(state.velocity, n_hat) * n_hat) - spec.radius * cross(state.omega, n_hat); // tangential slip velocity at contact point
 
         const float N = normalForce(state, collider, F).mag(); // magnitude of normal force
-        const float mu_s = spec.mu_s[collider.type];           // static coefficient of friction
-        const float mu_k = spec.mu_k[collider.type];           // kinetic coefficient of friction
+        const float mu_s = spec.mu_s.at(collider.type);        // static coefficient of friction
+        const float mu_k = spec.mu_k.at(collider.type);        // kinetic coefficient of friction
 
         if (v_slip.mag2() > 1e-6f)
         {
@@ -29,7 +29,7 @@ namespace SoftToss
         else
         {
             Vec3 F_req = F + N * n_hat; // required friction force to prevent slip
-            if (F_req.mag() < mu_s * N)
+            if (F_req.mag2() < (mu_s * N) * (mu_s * N))
             {
                 return -F_req; // static friction force
             }
@@ -61,10 +61,10 @@ namespace SoftToss
 
     BallState collision(const BallSpec &spec, const BallState &state, const Collider &collider)
     {
-        const float e_n = spec.e_n[collider.type];   // normal coefficient of restitution
-        const float e_t = spec.e_t[collider.type];   // tangential coefficient of restitution
-        const float mu_s = spec.mu_s[collider.type]; // static coefficient of friction
-        const float mu_k = spec.mu_k[collider.type]; // kinetic coefficient of friction
+        const float e_n = spec.e_n.at(collider.type);   // normal coefficient of restitution
+        const float e_t = spec.e_t.at(collider.type);   // tangential coefficient of restitution
+        const float mu_s = spec.mu_s.at(collider.type); // static coefficient of friction
+        const float mu_k = spec.mu_k.at(collider.type); // kinetic coefficient of friction
 
         const Vec3 n_hat = (state.position - collider.point).normalized();                            // normal vector from surface to ball center at contact
         const Vec3 v_contact_ball = state.velocity - spec.radius * cross(state.omega, n_hat);         // velocity at ball contact point
@@ -96,7 +96,9 @@ namespace SoftToss
         const Vec3 J_grip_b = (-(1.0f + e_t) * dot(v_rel, b_hat) / invEffMass_b) * b_hat; // binormal component of grip impulse
         const Vec3 J_grip = J_grip_t + J_grip_b;                                          // total grip impulse vector
 
-        const Vec3 J_t = (J_grip.mag() <= mu_s * j_n_mag) ? J_grip : -(mu_k * j_n_mag) * t_hat; // applied tangential impulse vector (either grip or sliding friction)
+        const Vec3 J_t = (J_grip.mag2() <= (mu_s * j_n_mag) * (mu_s * j_n_mag))
+                             ? J_grip
+                             : -(mu_k * j_n_mag) * t_hat; // applied tangential impulse vector (either grip or sliding friction)
 
         const Vec3 J = J_n + J_t; // total impulse vector
         BallState newState = state;

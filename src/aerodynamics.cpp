@@ -22,10 +22,9 @@ namespace SoftToss
         return F_mag;
     }
 
-    Vec3 gravityForce(const BallSpec &spec)
+    Vec3 gravityForce(const BallSpec &spec, const Environment &env)
     {
-        constexpr auto g = -32.174f; // ft/s^2
-        return Vec3{0.0f, 0.0f, spec.mass * g};
+        return Vec3{0.0f, 0.0f, spec.mass * env.gravity};
     }
 
     Vec3 sswForce()
