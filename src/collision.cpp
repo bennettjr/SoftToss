@@ -64,33 +64,6 @@ namespace SoftToss
         const float e_t = spec.e_t[collider.type]; // tangential coefficient of restitution
         const float mu = spec.mu[collider.type];   // coefficient of friction
 
-        Vec3 n_hat = (state.position - collider.point).normalized(); // normal vector from ground up to ball center
-
-        Vec3 J_n = -spec.mass * (1 + e_n) * dot(state.velocity, n_hat) * n_hat; // normal impulse
-        const float J_fmax = mu * J_n.mag();                                    // maximum frictional impulse
-
-        Vec3 v_slip = (state.velocity - dot(state.velocity, n_hat) * n_hat) - spec.radius * cross(state.omega, n_hat);
-        Vec3 J_slide = -J_fmax * v_slip.normalized();
-
-        Vec3 J_grip = -(2.0 / 7.0) * spec.mass * (1 + e_t) * v_slip;
-
-        Vec3 J_t = (J_grip.mag() <= J_fmax) ? J_grip : J_slide; // tangential impulse
-
-        Vec3 J = J_n + J_t; // total impulse
-
-        BallState newState = state; // copy current state to modify
-
-        newState.velocity = newState.velocity + J / spec.mass;                     // update ball velocity
-        newState.omega = newState.omega + cross(-spec.radius * n_hat, J) / spec.I; // update ball angular velocity
-        return newState;
-    };
-
-    BallState collision2(const BallSpec &spec, const BallState &state, const Collider &collider)
-    {
-        const float e_n = spec.e_n[collider.type]; // normal coefficient of restitution
-        const float e_t = spec.e_t[collider.type]; // tangential coefficient of restitution
-        const float mu = spec.mu[collider.type];   // coefficient of friction
-
         const Vec3 n_hat = (state.position - collider.point).normalized();                            // normal vector from surface to ball center at contact
         const Vec3 v_contact_ball = state.velocity - spec.radius * cross(state.omega, n_hat);         // velocity at ball contact point
         const Vec3 v_contact_collider = collider.velocity + cross(collider.omega, collider.leverArm); // velocity at collider contact point
