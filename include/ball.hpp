@@ -19,9 +19,10 @@ namespace SoftToss
         float radius; // ft
         float I;      // slug*ft^2
 
-        std::vector<float> e_n; // restitution coefficients for different collider types
-        std::vector<float> e_t; // tangential restitution coefficients for different collider types
-        std::vector<float> mu;  // friction coefficients for different collider types
+        std::vector<float> e_n;  // restitution coefficients for different collider types
+        std::vector<float> e_t;  // tangential restitution coefficients for different collider types
+        std::vector<float> mu_s; // static friction coefficients for different collider types
+        std::vector<float> mu_k; // kinetic friction coefficients for different collider types
 
         // float c_d0 = 0.3008f; // zero-lift drag coefficient
         // float c_l0 = 0.583f; // zero-spin lift coefficient
