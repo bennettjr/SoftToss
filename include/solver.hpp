@@ -5,6 +5,6 @@
 namespace SoftToss
 {
 
-    [[nodiscard]] BallState updateState(const BallSpec &spec, const BallState &state, const Environment &env, float dt, std::optional<Contact> contact = std::nullopt);
+    [[nodiscard]] BallState updateState(const BallSpec &spec, const BallState &state, const Environment &env, float dt, std::optional<Collider> contact = std::nullopt);
 
 } // namespace SoftToss
