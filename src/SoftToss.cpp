@@ -1,82 +1,125 @@
 #include "SoftToss.h"
 
-#include <optional>
+#include "solver.hpp"
 
-#include "ball.hpp"
-#include "environment.hpp"
-#include "collider.hpp"
+#include <cstddef>
+#include <optional>
 
 namespace SoftToss
 {
-    // Forward-declare the solver implementation (solver.cpp defines this).
-    [[nodiscard]] BallState updateState(const BallSpec &spec, const BallState &state, const Environment &env, float dt, std::optional<Collider> collider = std::nullopt);
+    namespace
+    {
+        Vec3 toVec3(const ST_Vec3 &value)
+        {
+            return {value.x, value.y, value.z};
+        }
 
+        ST_Vec3 fromVec3(const Vec3 &value)
+        {
+            return {value.x, value.y, value.z};
+        }
+
+        BallState toBallState(const ST_BallState &value)
+        {
+            BallState state;
+            state.position = toVec3(value.position);
+            state.velocity = toVec3(value.velocity);
+            state.omega = toVec3(value.omega);
+            state.acceleration = toVec3(value.acceleration);
+            return state;
+        }
+
+        ST_BallState fromBallState(const BallState &value)
+        {
+            ST_BallState state;
+            state.position = fromVec3(value.position);
+            state.velocity = fromVec3(value.velocity);
+            state.omega = fromVec3(value.omega);
+            state.acceleration = fromVec3(value.acceleration);
+            return state;
+        }
+
+        BallSpec toBallSpec(const ST_BallSpec &value)
+        {
+            BallSpec spec;
+            spec.mass = value.mass;
+            spec.radius = value.radius;
+            spec.I = value.I;
+
+            for (std::size_t index = 0; index < ST_COLLIDER_COUNT; ++index)
+            {
+                spec.e_n[index] = value.e_n[index];
+                spec.e_t[index] = value.e_t[index];
+                spec.mu_s[index] = value.mu_s[index];
+                spec.mu_k[index] = value.mu_k[index];
+            }
+
+            return spec;
+        }
+
+        Environment toEnvironment(const ST_Environment &value)
+        {
+            Environment environment;
+            environment.gravity = value.gravity;
+            environment.temp = value.temp;
+            environment.elev = value.elev;
+            environment.humid = value.humid;
+            environment.pres = value.pres;
+            environment.rho = value.rho;
+            environment.windSpeed = value.windSpeed;
+            environment.windDir = value.windDir;
+            environment.windHeight = value.windHeight;
+            return environment;
+        }
+
+        Collider toCollider(const ST_Collider &value)
+        {
+            Collider collider;
+            collider.type = value.type;
+            collider.point = toVec3(value.point);
+            collider.velocity = toVec3(value.velocity);
+            collider.omega = toVec3(value.omega);
+            collider.leverArm = toVec3(value.leverArm);
+            collider.invMass = value.invMass;
+            collider.invI_0 = value.invI_0;
+            collider.invI_z = value.invI_z;
+            return collider;
+        }
+
+        Integrator toIntegrator(ST_Integrator value)
+        {
+            switch (value)
+            {
+            case ST_Integrator_RK4:
+                return Integrator::RK4;
+            case ST_Integrator_Euler:
+            default:
+                return Integrator::Euler;
+            }
+        }
+    } // namespace
 } // namespace SoftToss
 
 extern "C"
 {
-
-    void SoftToss_updateState(const ST_BallSpec *spec, const ST_BallState *state, const ST_Environment *env, float dt, const ST_Collider *collider, ST_BallState *out)
+    void SoftToss_updateState(const ST_BallSpec *spec, const ST_BallState *state, const ST_Environment *env, float dt, ST_Integrator integrator, const ST_Collider *collider, ST_BallState *out)
     {
-        using namespace SoftToss;
         if (!spec || !state || !env || !out)
-            return;
-
-        BallSpec cpp_spec;
-        cpp_spec.mass = spec->mass;
-        cpp_spec.radius = spec->radius;
-        cpp_spec.I = spec->I;
-        // cpp_spec.c_d0 = spec->c_d0;
-        // cpp_spec.c_d = spec->c_d;
-        // cpp_spec.c_l0 = spec->c_l0;
-        // cpp_spec.c_l1 = spec->c_l1;
-        // cpp_spec.c_l2 = spec->c_l2;
-
-        BallState cpp_state;
-        cpp_state.position = {state->position.x, state->position.y, state->position.z};
-        cpp_state.velocity = {state->velocity.x, state->velocity.y, state->velocity.z};
-        cpp_state.omega = {state->omega.x, state->omega.y, state->omega.z};
-        cpp_state.acceleration = {state->acceleration.x, state->acceleration.y, state->acceleration.z};
-
-        Environment cpp_env;
-        cpp_env.temp = env->temp;
-        cpp_env.elev = env->elev;
-        cpp_env.humid = env->humid;
-        cpp_env.pres = env->pres;
-        cpp_env.rho = env->rho;
-        cpp_env.windSpeed = env->windSpeed;
-        cpp_env.windDir = env->windDir;
-        cpp_env.windHeight = env->windHeight;
-
-        std::optional<Collider> optColl;
-        if (collider)
         {
-            Collider c;
-            c.type = static_cast<ColliderType>(collider->type);
-            c.point = {collider->point.x, collider->point.y, collider->point.z};
-            optColl = c;
+            return;
         }
 
-        BallState res = updateState(cpp_spec, cpp_state, cpp_env, dt, optColl);
+        const SoftToss::BallSpec cppSpec = SoftToss::toBallSpec(*spec);
+        const SoftToss::BallState cppState = SoftToss::toBallState(*state);
+        const SoftToss::Environment cppEnv = SoftToss::toEnvironment(*env);
 
-        out->position.x = res.position.x;
-        out->position.y = res.position.y;
-        out->position.z = res.position.z;
+        std::optional<SoftToss::Collider> cppCollider;
+        if (collider)
+        {
+            cppCollider = SoftToss::toCollider(*collider);
+        }
 
-        out->velocity.x = res.velocity.x;
-        out->velocity.y = res.velocity.y;
-        out->velocity.z = res.velocity.z;
-
-        out->omega.x = res.omega.x;
-        out->omega.y = res.omega.y;
-        out->omega.z = res.omega.z;
-
-        out->acceleration.x = res.acceleration.x;
-        out->acceleration.y = res.acceleration.y;
-        out->acceleration.z = res.acceleration.z;
+        const SoftToss::BallState result = SoftToss::updateState(cppSpec, cppState, cppEnv, dt, SoftToss::toIntegrator(integrator), cppCollider);
+        *out = SoftToss::fromBallState(result);
     }
-
-} // extern "C"
-
-// static_assert(static_cast<int>(SurfaceType::Count) == 4,
-//     "ST_BallSpec surface arrays need updating to match SurfaceType::Count");
+}

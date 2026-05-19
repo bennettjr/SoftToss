@@ -5,7 +5,7 @@ namespace SoftToss
 
     Vec3 dragForce(const Vec3 &v_rel, const float &w_act, const float &kappa)
     {
-        float c_d0 = 0.3008;                                    // drag coefficient for a non-spinning ball at high speed
+        float c_d0 = 0.3008f;                                   // drag coefficient for a non-spinning ball at high speed
         const float c_d = c_d0 + (2.92e-5f * (w_act * 9.549f)); // drag coefficient considering velocity and spin
         Vec3 F_drag = -kappa * c_d * v_rel.mag() * v_rel;       // drag force slug*ft/s^2
         return F_drag;

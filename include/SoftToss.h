@@ -1,15 +1,23 @@
 #ifndef SOFTTOSS_H
 #define SOFTTOSS_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    // C-friendly API types (prefixed with ST_ to avoid colliding with C++ types)
+    enum
+    {
+        ST_COLLIDER_COUNT = 32
+    };
+
     typedef struct ST_Vec3
     {
-        float x, y, z;
+        float x;
+        float y;
+        float z;
     } ST_Vec3;
 
     typedef struct ST_BallState
@@ -26,43 +34,44 @@ extern "C"
         float radius;
         float I;
 
-        float c_d0;
-        float c_d;
-        float c_l0;
-        float c_l1;
-        float c_l2;
+        float e_n[ST_COLLIDER_COUNT];
+        float e_t[ST_COLLIDER_COUNT];
+        float mu_s[ST_COLLIDER_COUNT];
+        float mu_k[ST_COLLIDER_COUNT];
     } ST_BallSpec;
 
     typedef struct ST_Environment
     {
+        float gravity;
         float temp;
         float elev;
         float humid;
         float pres;
-
         float rho;
-
         float windSpeed;
         float windDir;
         float windHeight;
     } ST_Environment;
 
-    // Collider type mirrors SoftToss::ColliderType
-    typedef enum ST_ColliderType
-    {
-        ST_Collider_Dirt = 0,
-        ST_Collider_Grass = 1,
-    } ST_ColliderType;
-
     typedef struct ST_Collider
     {
-        ST_ColliderType type;
+        uint8_t type;
         ST_Vec3 point;
+        ST_Vec3 velocity;
+        ST_Vec3 omega;
+        ST_Vec3 leverArm;
+        float invMass;
+        float invI_0;
+        float invI_z;
     } ST_Collider;
 
-    // Update the ball state. Provide pointers to inputs; `collider` may be NULL.
-    // The result is written into `out`.
-    void SoftToss_updateState(const ST_BallSpec *spec, const ST_BallState *state, const ST_Environment *env, float dt, const ST_Collider *collider, ST_BallState *out);
+    typedef enum ST_Integrator
+    {
+        ST_Integrator_Euler = 0,
+        ST_Integrator_RK4 = 1
+    } ST_Integrator;
+
+    void SoftToss_updateState(const ST_BallSpec *spec, const ST_BallState *state, const ST_Environment *env, float dt, ST_Integrator integrator, const ST_Collider *collider, ST_BallState *out);
 
 #ifdef __cplusplus
 }
