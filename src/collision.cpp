@@ -1,6 +1,8 @@
 // switch to lambdas when complete
 
 #include "collision.hpp"
+#include "environment.hpp"
+#include <algorithm> // for std::max, std::clamp
 
 namespace SoftToss
 {
@@ -66,9 +68,8 @@ namespace SoftToss
         }
     };
 
-    Vec3 collisionImpulse(const BallSpec &spec, const BallState &state, const Collider &collider)
+    Vec3 collisionImpulse(const BallSpec &spec, const BallState &state, const Collider &collider, const Environment &env)
     {
-        const float e_n = spec.e_n.at(collider.type);   // normal coefficient of restitution
         const float e_t = spec.e_t.at(collider.type);   // tangential coefficient of restitution
         const float mu_s = spec.mu_s.at(collider.type); // static coefficient of friction
         const float mu_k = spec.mu_k.at(collider.type); // kinetic coefficient of friction
@@ -77,6 +78,11 @@ namespace SoftToss
         const Vec3 v_contact_ball = state.velocity - spec.radius * cross(state.omega, n_hat);         // velocity at ball contact point
         const Vec3 v_contact_collider = collider.velocity + cross(collider.omega, collider.leverArm); // velocity at collider contact point
         const Vec3 v_rel = v_contact_ball - v_contact_collider;                                       // relative velocity at contact point
+
+        const float e_n_ref = spec.corModel.e_n.at(collider.type);
+        const float k_v = spec.corModel.k.at(collider.type);
+        constexpr float ref_temp = 70.0f;                                                                                                   // deg F
+        const float e_n = std::clamp(e_n_ref - k_v * std::abs(dot(v_rel, n_hat)) + spec.corModel.beta * (env.temp - ref_temp), 0.0f, 1.0f); // velocity and temperature dependent normal restitution coefficient
 
         const Vec3 v_slip = v_rel - dot(v_rel, n_hat) * n_hat; // tangential slip velocity at contact point
         const float v_slip_mag = v_slip.mag();                 // magnitude of slip velocity for determining friction direction

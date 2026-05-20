@@ -30,6 +30,15 @@ namespace SoftToss
         float S_rev;
     };
 
+    struct CorModel
+    {
+        std::array<float, 32> e_n; // restitution coefficients for different collider types
+        std::array<float, 32> k;   // velocity decay rate s/ft
+        float beta;                // temperature coefficient 1 / deg F
+
+        std::array<float, 32> e_t; // tangential restitution coefficients for different collider types
+    };
+
     struct BallState
     {
         Vec3 position;
@@ -48,10 +57,11 @@ namespace SoftToss
         std::array<float, 32> e_t;  // tangential restitution coefficients for different collider types
         std::array<float, 32> mu_s; // static friction coefficients for different collider types
         std::array<float, 32> mu_k; // kinetic friction coefficients for different collider types
-        std::array<float, 32> c_rr; // kinetic friction coefficients for different collider types
+        std::array<float, 32> c_rr; // rolling resistance coefficients for different collider types
 
         DragModel dragModel;
         LiftModel liftModel;
+        CorModel corModel;
     };
 
 } // namespace SoftToss

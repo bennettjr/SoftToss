@@ -76,13 +76,18 @@ namespace SoftToss
         }
     }
 
-    [[nodiscard]] BallState collisionState(const BallSpec &spec, const BallState &state, const Collider &collider)
+    [[nodiscard]] BallState collisionState(const BallSpec &spec, const BallState &state, const Collider &collider, const Environment &env)
     {
         const Vec3 n_hat = (state.position - collider.point).normalized();
-        const Vec3 J = collisionImpulse(spec, state, collider);
+        const Vec3 J = collisionImpulse(spec, state, collider, env);
         BallState newState = state;
         newState.velocity = newState.velocity + J / spec.mass;
         newState.omega = newState.omega + cross(-spec.radius * n_hat, J) / spec.I;
+
+        // Penetration correction
+        const float overlap_depth = spec.radius - (newState.position - collider.point).mag();
+        if (overlap_depth > 0.0f)
+            newState.position = newState.position + (overlap_depth + 1e-4f) * n_hat;
 
         return newState;
     }

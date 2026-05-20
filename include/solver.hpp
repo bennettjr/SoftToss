@@ -14,6 +14,6 @@ namespace SoftToss
 
     [[nodiscard]] BallState updateState(const BallSpec &spec, const BallState &state, const Environment &env, float dt, Integrator integrator, std::optional<Collider> contact = std::nullopt);
 
-    [[nodiscard]] BallState collisionState(const BallSpec &spec, const BallState &state, const Collider &collider);
+    [[nodiscard]] BallState collisionState(const BallSpec &spec, const BallState &state, const Collider &collider, const Environment &env);
 
 } // namespace SoftToss
