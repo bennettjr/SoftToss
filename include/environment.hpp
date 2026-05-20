@@ -14,6 +14,7 @@ namespace SoftToss
         float humid; // relative humidity
         float pres;  // barometric pressure
 
+        float mu;  // dynamic viscosity slug/(ft*s)
         float rho; // air density slug/ft^3
 
         float windSpeed;  // ft/s
@@ -21,4 +22,4 @@ namespace SoftToss
         float windHeight; // ft
     };
 
-}; // namespace SoftToss
+} // namespace SoftToss

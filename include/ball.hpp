@@ -5,6 +5,31 @@
 namespace SoftToss
 {
 
+    struct DragModel
+    {
+        float cd_laminar;
+        float cd_turbulent;
+
+        float Re_crit;
+        float Re_width;
+
+        float k_spin;
+        float S_crit;
+    };
+
+    struct LiftModel
+    {
+        float c_l0;
+        float c_l1;
+        float c_l2;
+
+        float Re_rev;
+        float Re_width;
+
+        float c_l_rev;
+        float S_rev;
+    };
+
     struct BallState
     {
         Vec3 position;
@@ -23,11 +48,10 @@ namespace SoftToss
         std::array<float, 32> e_t;  // tangential restitution coefficients for different collider types
         std::array<float, 32> mu_s; // static friction coefficients for different collider types
         std::array<float, 32> mu_k; // kinetic friction coefficients for different collider types
+        std::array<float, 32> c_rr; // kinetic friction coefficients for different collider types
 
-        // float c_d0 = 0.3008f; // zero-lift drag coefficient
-        // float c_l0 = 0.583f; // zero-spin lift coefficient
-        // float c_l1 = 2.333f; // lift coefficient linear term for spin
-        // float c_l2 = 1.120f; // lift coefficient quadratic term for spin
+        DragModel dragModel;
+        LiftModel liftModel;
     };
 
 } // namespace SoftToss

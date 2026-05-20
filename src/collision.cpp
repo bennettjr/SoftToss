@@ -1,14 +1,22 @@
+// switch to lambdas when complete
+
 #include "collision.hpp"
 
 namespace SoftToss
 {
 
+    Wrench contactWrench(const BallSpec &spec, const BallState &state, const Collider &collider, const Vec3 &F)
+    {
+        Vec3 F_norm = normalForce(state, collider, F);
+        Vec3 F_fric = frictionForce(spec, state, collider, F);
+        Vec3 T_fric = frictionTorque(spec, state, collider, F_fric, F);
+        return Wrench{F_norm + F_fric, T_fric};
+    };
+
     Vec3 normalForce(const BallState &state, const Collider &collider, const Vec3 &F)
     {
         Vec3 n_hat = (state.position - collider.point).normalized(); // normal at contact point from surface to ball
-        float F_n = -dot(F, n_hat);
-        if (F_n < 0.0f)
-            F_n = 0.0f; // no tensile normal force
+        float F_n = std::max(0.0f, -dot(F, n_hat));                  // normal force magnitude (clamped to prevent tensile force)
         return F_n * n_hat;
     };
 
@@ -17,9 +25,9 @@ namespace SoftToss
         Vec3 n_hat = (state.position - collider.point).normalized();                                                   // normal vector from ground up to ball center
         Vec3 v_slip = (state.velocity - dot(state.velocity, n_hat) * n_hat) - spec.radius * cross(state.omega, n_hat); // tangential slip velocity at contact point
 
-        const float N = normalForce(state, collider, F).mag(); // magnitude of normal force
-        const float mu_s = spec.mu_s.at(collider.type);        // static coefficient of friction
-        const float mu_k = spec.mu_k.at(collider.type);        // kinetic coefficient of friction
+        const float N = std::max(0.0f, -dot(F, n_hat)); // magnitude of normal force
+        const float mu_s = spec.mu_s.at(collider.type); // static coefficient of friction
+        const float mu_k = spec.mu_k.at(collider.type); // kinetic coefficient of friction
 
         if (v_slip.mag2() > 1e-6f)
         {
@@ -40,7 +48,7 @@ namespace SoftToss
         }
     };
 
-    Vec3 frictionTorque(const BallSpec &spec, const BallState &state, const Collider &collider, const Vec3 &F_fric, const Vec3 &F_norm)
+    Vec3 frictionTorque(const BallSpec &spec, const BallState &state, const Collider &collider, const Vec3 &F_fric, const Vec3 &F)
     {
         Vec3 n_hat = (state.position - collider.point).normalized(); // normal vector from ground up to ball center
         Vec3 v_slip = (state.velocity - dot(state.velocity, n_hat) * n_hat) - spec.radius * cross(state.omega, n_hat);
@@ -53,13 +61,12 @@ namespace SoftToss
         }
         else
         {
-            const float c_rr = 0.1f;
-            Vec3 torque = (state.omega.mag2() > 1e-6f) ? -c_rr * F_norm.mag() * spec.radius * state.omega.normalized() : Vec3();
+            Vec3 torque = (state.omega.mag2() > 1e-6f) ? -spec.c_rr[collider.type] * std::max(0.0f, -dot(F, n_hat)) * spec.radius * state.omega.normalized() : Vec3();
             return torque;
         }
     };
 
-    BallState collision(const BallSpec &spec, const BallState &state, const Collider &collider)
+    Vec3 collisionImpulse(const BallSpec &spec, const BallState &state, const Collider &collider)
     {
         const float e_n = spec.e_n.at(collider.type);   // normal coefficient of restitution
         const float e_t = spec.e_t.at(collider.type);   // tangential coefficient of restitution
@@ -101,11 +108,8 @@ namespace SoftToss
                              : -(mu_k * j_n_mag) * t_hat; // applied tangential impulse vector (either grip or sliding friction)
 
         const Vec3 J = J_n + J_t; // total impulse vector
-        BallState newState = state;
-        newState.velocity = newState.velocity + J / spec.mass;
-        newState.omega = newState.omega + cross(-spec.radius * n_hat, J) / spec.I;
 
-        return newState;
+        return J;
     };
 
 }; // namespace SoftToss
