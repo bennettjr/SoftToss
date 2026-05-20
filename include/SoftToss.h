@@ -28,6 +28,40 @@ extern "C"
         ST_Vec3 acceleration;
     } ST_BallState;
 
+    typedef struct ST_DragModel
+    {
+        float cd_laminar;
+        float cd_turbulent;
+
+        float Re_crit;
+        float Re_width;
+
+        float k_spin;
+        float S_crit;
+    } ST_DragModel;
+
+    typedef struct ST_LiftModel
+    {
+        float c_l0;
+        float c_l1;
+        float c_l2;
+
+        float Re_rev;
+        float Re_width;
+
+        float c_l_rev;
+        float S_rev;
+    } ST_LiftModel;
+
+    typedef struct ST_CorModel
+    {
+        float e_n[ST_COLLIDER_COUNT];
+        float k[ST_COLLIDER_COUNT];
+        float beta;
+
+        float e_t[ST_COLLIDER_COUNT];
+    } ST_CorModel;
+
     typedef struct ST_BallSpec
     {
         float mass;
@@ -38,6 +72,11 @@ extern "C"
         float e_t[ST_COLLIDER_COUNT];
         float mu_s[ST_COLLIDER_COUNT];
         float mu_k[ST_COLLIDER_COUNT];
+        float c_rr[ST_COLLIDER_COUNT];
+
+        ST_DragModel dragModel;
+        ST_LiftModel liftModel;
+        ST_CorModel corModel;
     } ST_BallSpec;
 
     typedef struct ST_Environment
@@ -47,6 +86,7 @@ extern "C"
         float elev;
         float humid;
         float pres;
+        float mu;
         float rho;
         float windSpeed;
         float windDir;

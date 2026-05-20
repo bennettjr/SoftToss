@@ -4,99 +4,83 @@
 
 #include <cstddef>
 #include <optional>
+#include <cstring>
 
 namespace SoftToss
 {
     namespace
     {
-        Vec3 toVec3(const ST_Vec3 &value)
+        inline Vec3 toVec3(const ST_Vec3 &v) noexcept { return {v.x, v.y, v.z}; }
+        inline ST_Vec3 fromVec3(const Vec3 &v) noexcept { return {v.x, v.y, v.z}; }
+
+        inline BallState toBallState(const ST_BallState &s) noexcept
         {
-            return {value.x, value.y, value.z};
+            return {toVec3(s.position), toVec3(s.velocity), toVec3(s.omega), toVec3(s.acceleration)};
         }
 
-        ST_Vec3 fromVec3(const Vec3 &value)
+        inline ST_BallState fromBallState(const BallState &s) noexcept
         {
-            return {value.x, value.y, value.z};
+            return {fromVec3(s.position), fromVec3(s.velocity), fromVec3(s.omega), fromVec3(s.acceleration)};
         }
 
-        BallState toBallState(const ST_BallState &value)
+        inline BallSpec toBallSpec(const ST_BallSpec &s) noexcept
         {
-            BallState state;
-            state.position = toVec3(value.position);
-            state.velocity = toVec3(value.velocity);
-            state.omega = toVec3(value.omega);
-            state.acceleration = toVec3(value.acceleration);
-            return state;
+            BallSpec out;
+            out.mass = s.mass;
+            out.radius = s.radius;
+            out.I = s.I;
+
+            // copy contiguous float arrays
+            std::memcpy(out.e_n.data(), s.e_n, sizeof(float) * ST_COLLIDER_COUNT);
+            std::memcpy(out.e_t.data(), s.e_t, sizeof(float) * ST_COLLIDER_COUNT);
+            std::memcpy(out.mu_s.data(), s.mu_s, sizeof(float) * ST_COLLIDER_COUNT);
+            std::memcpy(out.mu_k.data(), s.mu_k, sizeof(float) * ST_COLLIDER_COUNT);
+            std::memcpy(out.c_rr.data(), s.c_rr, sizeof(float) * ST_COLLIDER_COUNT);
+
+            // copy nested models
+            out.dragModel = {s.dragModel.cd_laminar, s.dragModel.cd_turbulent, s.dragModel.Re_crit, s.dragModel.Re_width, s.dragModel.k_spin, s.dragModel.S_crit};
+            out.liftModel = {s.liftModel.c_l0, s.liftModel.c_l1, s.liftModel.c_l2, s.liftModel.Re_rev, s.liftModel.Re_width, s.liftModel.c_l_rev, s.liftModel.S_rev};
+
+            // corModel: copy arrays
+            std::memcpy(out.corModel.e_n.data(), s.corModel.e_n, sizeof(float) * ST_COLLIDER_COUNT);
+            std::memcpy(out.corModel.k.data(), s.corModel.k, sizeof(float) * ST_COLLIDER_COUNT);
+            out.corModel.beta = s.corModel.beta;
+            std::memcpy(out.corModel.e_t.data(), s.corModel.e_t, sizeof(float) * ST_COLLIDER_COUNT);
+
+            return out;
         }
 
-        ST_BallState fromBallState(const BallState &value)
+        inline Environment toEnvironment(const ST_Environment &e) noexcept
         {
-            ST_BallState state;
-            state.position = fromVec3(value.position);
-            state.velocity = fromVec3(value.velocity);
-            state.omega = fromVec3(value.omega);
-            state.acceleration = fromVec3(value.acceleration);
-            return state;
+            Environment out;
+            out.gravity = e.gravity;
+            out.temp = e.temp;
+            out.elev = e.elev;
+            out.humid = e.humid;
+            out.pres = e.pres;
+            out.mu = e.mu;
+            out.rho = e.rho;
+            out.windSpeed = e.windSpeed;
+            out.windDir = e.windDir;
+            out.windHeight = e.windHeight;
+            return out;
         }
 
-        BallSpec toBallSpec(const ST_BallSpec &value)
+        inline Collider toCollider(const ST_Collider &c) noexcept
         {
-            BallSpec spec;
-            spec.mass = value.mass;
-            spec.radius = value.radius;
-            spec.I = value.I;
-
-            for (std::size_t index = 0; index < ST_COLLIDER_COUNT; ++index)
-            {
-                spec.e_n[index] = value.e_n[index];
-                spec.e_t[index] = value.e_t[index];
-                spec.mu_s[index] = value.mu_s[index];
-                spec.mu_k[index] = value.mu_k[index];
-            }
-
-            return spec;
+            Collider out;
+            out.type = c.type;
+            out.point = toVec3(c.point);
+            out.velocity = toVec3(c.velocity);
+            out.omega = toVec3(c.omega);
+            out.leverArm = toVec3(c.leverArm);
+            out.invMass = c.invMass;
+            out.invI_0 = c.invI_0;
+            out.invI_z = c.invI_z;
+            return out;
         }
 
-        Environment toEnvironment(const ST_Environment &value)
-        {
-            Environment environment;
-            environment.gravity = value.gravity;
-            environment.temp = value.temp;
-            environment.elev = value.elev;
-            environment.humid = value.humid;
-            environment.pres = value.pres;
-            environment.rho = value.rho;
-            environment.windSpeed = value.windSpeed;
-            environment.windDir = value.windDir;
-            environment.windHeight = value.windHeight;
-            return environment;
-        }
-
-        Collider toCollider(const ST_Collider &value)
-        {
-            Collider collider;
-            collider.type = value.type;
-            collider.point = toVec3(value.point);
-            collider.velocity = toVec3(value.velocity);
-            collider.omega = toVec3(value.omega);
-            collider.leverArm = toVec3(value.leverArm);
-            collider.invMass = value.invMass;
-            collider.invI_0 = value.invI_0;
-            collider.invI_z = value.invI_z;
-            return collider;
-        }
-
-        Integrator toIntegrator(ST_Integrator value)
-        {
-            switch (value)
-            {
-            case ST_Integrator_RK4:
-                return Integrator::RK4;
-            case ST_Integrator_Euler:
-            default:
-                return Integrator::Euler;
-            }
-        }
+        inline Integrator toIntegrator(ST_Integrator i) noexcept { return (i == ST_Integrator_RK4) ? Integrator::RK4 : Integrator::Euler; }
     } // namespace
 } // namespace SoftToss
 
