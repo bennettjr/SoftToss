@@ -1,5 +1,3 @@
-// switch to lambdas when complete
-
 #include "aerodynamics.hpp"
 #include <numbers> // for std::numbers::pi_v
 #include <cmath>   // for std::tanh, std::exp, std::sqrt
@@ -11,9 +9,9 @@ namespace SoftToss
     {
         constexpr float degToRad = std::numbers::pi_v<float> / 180.0f;
 
-        constexpr float z_0 = 0.1f;                                                                                         // roughness length for wind profile (ft)
-        constexpr float z_ref = 10.0f;                                                                                      // reference height for wind speed (ft)
-        const float windScale = (state.position.z > z_0) ? std::log(state.position.z / z_0) / std::log(z_ref / z_0) : 0.0f; // wind speed scaling factor
+        constexpr float z_0 = 0.1f;                                                                      // roughness length for wind profile (ft)
+        constexpr float z_ref = 10.0f;                                                                   // reference height for wind speed (ft)
+        const float windScale = std::log(std::max(state.position.z, z_0) / z_0) / std::log(z_ref / z_0); // wind speed scaling factor
         const Vec3 windVel = {env.windSpeed * windScale * std::cos(env.windDir * degToRad), env.windSpeed * windScale * std::sin(env.windDir * degToRad), 0.0f};
 
         const float kappa = 0.5f * env.rho * (std::numbers::pi_v<float> * spec.radius * spec.radius); // constant for force calculations
@@ -88,9 +86,9 @@ namespace SoftToss
 
     Vec3 spindownTorque(const BallSpec &spec, const BallState &state, const Vec3 &F) // spindown torque slug*ft^2/s^2
     {
-        const auto k = 0.02f;                                                                                          // Torque Parameter (Check this value)
+        constexpr auto k = 0.02f;                                                                                      // Torque Parameter (Check this value)
         Vec3 torque = (state.omega.mag2() > 1e-6f) ? k * spec.radius * F.mag() * (-state.omega.normalized()) : Vec3(); // torque slug*ft^2/s^2
         return torque;
     }
 
-}; // namespace SoftToss
+} // namespace SoftToss

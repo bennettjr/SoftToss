@@ -31,8 +31,8 @@ namespace SoftToss
             out.I = s.I;
 
             // copy contiguous float arrays
-            std::memcpy(out.e_n.data(), s.e_n, sizeof(float) * ST_COLLIDER_COUNT);
-            std::memcpy(out.e_t.data(), s.e_t, sizeof(float) * ST_COLLIDER_COUNT);
+            std::memcpy(out.corModel.e_n.data(), s.e_n, sizeof(float) * ST_COLLIDER_COUNT);
+            std::memcpy(out.corModel.e_t.data(), s.e_t, sizeof(float) * ST_COLLIDER_COUNT);
             std::memcpy(out.mu_s.data(), s.mu_s, sizeof(float) * ST_COLLIDER_COUNT);
             std::memcpy(out.mu_k.data(), s.mu_k, sizeof(float) * ST_COLLIDER_COUNT);
             std::memcpy(out.c_rr.data(), s.c_rr, sizeof(float) * ST_COLLIDER_COUNT);

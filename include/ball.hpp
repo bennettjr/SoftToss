@@ -53,8 +53,6 @@ namespace SoftToss
         float radius; // ft
         float I;      // slug*ft^2
 
-        std::array<float, 32> e_n;  // restitution coefficients for different collider types
-        std::array<float, 32> e_t;  // tangential restitution coefficients for different collider types
         std::array<float, 32> mu_s; // static friction coefficients for different collider types
         std::array<float, 32> mu_k; // kinetic friction coefficients for different collider types
         std::array<float, 32> c_rr; // rolling resistance coefficients for different collider types

@@ -1,5 +1,3 @@
-// switch to lambdas when complete
-
 #include "collision.hpp"
 #include "environment.hpp"
 #include <algorithm> // for std::max, std::clamp
@@ -70,9 +68,9 @@ namespace SoftToss
 
     Vec3 collisionImpulse(const BallSpec &spec, const BallState &state, const Collider &collider, const Environment &env)
     {
-        const float e_t = spec.e_t.at(collider.type);   // tangential coefficient of restitution
-        const float mu_s = spec.mu_s.at(collider.type); // static coefficient of friction
-        const float mu_k = spec.mu_k.at(collider.type); // kinetic coefficient of friction
+        const float e_t = spec.corModel.e_t.at(collider.type); // tangential coefficient of restitution
+        const float mu_s = spec.mu_s.at(collider.type);        // static coefficient of friction
+        const float mu_k = spec.mu_k.at(collider.type);        // kinetic coefficient of friction
 
         const Vec3 n_hat = (state.position - collider.point).normalized();                            // normal vector from surface to ball center at contact
         const Vec3 v_contact_ball = state.velocity - spec.radius * cross(state.omega, n_hat);         // velocity at ball contact point
@@ -118,4 +116,4 @@ namespace SoftToss
         return J;
     };
 
-}; // namespace SoftToss
+} // namespace SoftToss
