@@ -27,7 +27,7 @@ namespace SoftToss
                             ? (spec.radius * w_act) / v_rel_mag
                             : 0.0f;
 
-        const float Re = (env.mu > 1e-6f) // Reynolds number
+        const float Re = (env.mu > 1e-9f) // Reynolds number
                              ? (env.rho * v_rel_mag * 2.0f * spec.radius) / env.mu
                              : 0.0f;
 

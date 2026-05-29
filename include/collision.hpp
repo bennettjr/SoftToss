@@ -3,6 +3,7 @@
 #include "screw.hpp"
 #include "ball.hpp"
 #include "collider.hpp"
+#include "environment.hpp"
 
 namespace SoftToss
 {

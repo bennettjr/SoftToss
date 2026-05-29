@@ -1,5 +1,4 @@
 #include "collision.hpp"
-#include "environment.hpp"
 #include <algorithm> // for std::max, std::clamp
 
 namespace SoftToss
